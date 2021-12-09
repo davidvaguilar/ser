@@ -28,7 +28,7 @@ class HomeController extends Controller
     public function index(Request $request)
     {     
       $login = $this->objSer->login();
-        $inicio = array('22/07/2021', '25/07/2021', '01/08/2021', '08/08/2021', '15/08/2021', '22/08/2021');    // OK
+       /* $inicio = array('22/07/2021', '25/07/2021', '01/08/2021', '08/08/2021', '15/08/2021', '22/08/2021');    // OK
         $fin = array('24/07/2021', '31/07/2021', '07/08/2021', '14/08/2021',  '21/08/2021', '28/08/2021');    // OK
 
         $inicio = array('22/08/2021', '29/08/2021', '05/09/2021', '12/09/2021', '19/09/2021', '26/09/2021');    // OK
@@ -37,21 +37,32 @@ class HomeController extends Controller
         $inicio = array('03/10/2021', '10/10/2021', '17/10/2021', '24/10/2021', '31/10/2021', '07/11/2021');  // OK
         $fin = array('09/10/2021', '16/10/2021', '23/10/2021', '30/10/2021', '06/11/2021', '13/11/2021');     // OK
 
-        $inicio = array('14/11/2021', '21/11/2021', '28/11/2021', '05/12/2021', '12/12/2021', '19/12/2021', '26/12/2021');     // OK
-        $fin = array('20/11/2021', '27/11/2021', '04/12/2021', '11/12/2021', '18/12/2021', '25/12/2021', '01/01/2022');  // OK
+        $inicio = array('14/11/2021', '21/11/2021', '24/11/2021', '26/11/2021', '28/11/2021', '05/12/2021', '12/12/2021', '19/12/2021', '26/12/2021');     // OK
+        $fin = array('20/11/2021', '23/11/2021', '25/11/2021', '27/11/2021', '11/12/2021', '18/12/2021', '25/12/2021', '01/01/2022');  // OK
+*/
 
-      // $inicio = array('02/01/2022');
-      // $fin = array('08/01/2022');
+        //$fechaInicio = "2021-11-01";
+        $fechaInicio = date('Y-m-d');
+        $fechaFin = date('Y-m-d');
 
-      // $inicio = array('22/07/2021', '25/07/2021' );   // PRUEBA
-      // $fin = array('24/07/2021', '31/07/2021' );     //PRUEBA  
+        /*$fechaInicio = "2021-08-27";  15 dias menos
+        $fechaFin = "2021-08-27";*/
+        
+        $tiempoInicio = strtotime($fechaInicio. "-15 day");
+        $tiempoFin = strtotime($fechaFin);
+      
+        # 24 horas * 60 minutos por hora * 60 segundos por minuto
+        $dia = 86400;
 
-      //$inicio = array('25/07/2021');   // PRUEBA
-      //$fin = array('31/07/2021');     //PRUEBA  
+        $contador_dias = 0;
+        while( $tiempoInicio <= $tiempoFin ){
+          $fechaActual = date("d/m/Y", $tiempoInicio);
+          //dd($fechaActual);
 
-     
-      for ($a = 0; $a < count($inicio); $a++) { 
-          $ser_integracion = $this->objSer->getPacienteFecha( $login['token'], $inicio[$a], $fin[$a]);
+          $inicio = $fechaActual;    // OK
+          $fin = $fechaActual;    // OK
+
+          $ser_integracion = $this->objSer->getPacienteFecha( $login['token'], $inicio, $fin);
           try{
             $this->conn = $this->objConexion->getInstancia(config('app.DB_USERNAME'),config('app.DB_PASSWORD'));
             $contador_ciclos = 0;
@@ -61,9 +72,7 @@ class HomeController extends Controller
             $contador_errores = 0;
             for( $i=0 ; $i < count($ser_integracion) ; $i++ ) { 
               // dd($ser_integracion[$i]['pacienteEpisodios'][0]['idEspecialidad']);
-              
               for( $j=0 ; $j < count($ser_integracion[$i]['pacienteEpisodios']) ; $j++ ) { 
-
                 $id_paciente = NULL;
                   
                 $nom_nombre = NULL;
@@ -96,7 +105,6 @@ class HomeController extends Controller
                 $nom_cierre = NULL;
                 $cod_cie10_cierre = NULL;
                 $fec_egreso_episodio = NULL;
-
                 try {
                   $id_paciente = $ser_integracion[$i]['idPaciente'];
                     
@@ -200,14 +208,14 @@ class HomeController extends Controller
               }  
             }
             if( $contador_ciclos > 0){
-              echo  "<br><br>Fecha Carga : desde ".$inicio[$a]." - hasta ".$fin[$a].
+              echo  "<br><br>Fecha Carga : dia ".$inicio.
                   "<br>Total de Pacientes ".$contador_ciclos.
                   "<br>Episodios solo ingresados ".$contador_insertados.
                   "<br>Episodios no registrados ".$contador_nada.
                   "<br>Episodios con egreso ".$contador_finalizados.
                   "<br>Episodios con errores ".$contador_errores;
 
-              Log::info( "<br><br>Fecha Carga : desde ".$inicio[$a]." - hasta ".$fin[$a].
+              Log::info( "<br><br>Fecha Carga : dia ".$inicio.
                   "<br>Total de Pacientes ".$contador_ciclos.
                   "<br>Episodios solo ingresados ".$contador_insertados.
                   "<br>Episodios no registrados ".$contador_nada.
@@ -216,10 +224,28 @@ class HomeController extends Controller
             }
           } catch(\Exception $e){
             Log::info($e->getMessage());
-              
           }
-      }
-      echo "<br><br><br>Total de Ciclos: ".$a."<br>No se consideran ciclos que no tengan registros";
+          $tiempoInicio += $dia;
+          $contador_dias++;
+        }
+
+        echo "<br><br><br>Total de Ciclos: ".$contador_dias."<br>No se consideran ciclos que no tengan registros";
+    
+      // $inicio = array('02/01/2022');
+      // $fin = array('08/01/2022');
+
+      // $inicio = array('22/07/2021', '25/07/2021' );   // PRUEBA
+      // $fin = array('24/07/2021', '31/07/2021' );     //PRUEBA  
+
+    //  $inicio = array();   // PRUEBA
+     // $fin = array('23/11/2021', '25/11/2021', '27/11/2021');     //PRUEBA  
+
+      
+
+     
+      /*for ($a = 0; $a < count($inicio); $a++) { 
+        
+      }*/
     }
 
     public function create()

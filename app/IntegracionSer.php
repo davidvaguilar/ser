@@ -75,10 +75,12 @@ class IntegracionSer extends Model
 		$dt = [];
 		
 		try{
-			$client = new Client();
+			$client = new Client([
+                'curl.options' =>[ 'CURLOPT_BUFFERSIZE' => 10485764]
+                ]);
 
             $request_param = [
-                'fechaInicio'    => $inicio,    //  $inicio[$i]
+                'fechaInicio'    => $inicio,            //  $inicio[$i]
                 'fechaFin'       => $fin,               // $fin[$i]
             ];	
             $request_data = json_encode($request_param);
