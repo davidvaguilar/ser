@@ -27,19 +27,14 @@ class HomeController extends Controller
 
     public function index(Request $request)
     {     
-      $login = $this->objSer->login();
-       /* $inicio = array('22/07/2021', '25/07/2021', '01/08/2021', '08/08/2021', '15/08/2021', '22/08/2021');    // OK
-        $fin = array('24/07/2021', '31/07/2021', '07/08/2021', '14/08/2021',  '21/08/2021', '28/08/2021');    // OK
+        $login = array();
+        for ($i=0; $i < 40; $i++) { 
+          array_push($login, $this->objSer->login());
+        }
 
-        $inicio = array('22/08/2021', '29/08/2021', '05/09/2021', '12/09/2021', '19/09/2021', '26/09/2021');    // OK
-        $fin = array('28/08/2021', '04/09/2021', '11/09/2021', '18/09/2021', '25/09/2021', '02/10/2021');     // OK
+        //$login = $this->objSer->login();
 
-        $inicio = array('03/10/2021', '10/10/2021', '17/10/2021', '24/10/2021', '31/10/2021', '07/11/2021');  // OK
-        $fin = array('09/10/2021', '16/10/2021', '23/10/2021', '30/10/2021', '06/11/2021', '13/11/2021');     // OK
-
-        $inicio = array('14/11/2021', '21/11/2021', '24/11/2021', '26/11/2021', '28/11/2021', '05/12/2021', '12/12/2021', '19/12/2021', '26/12/2021');     // OK
-        $fin = array('20/11/2021', '23/11/2021', '25/11/2021', '27/11/2021', '11/12/2021', '18/12/2021', '25/12/2021', '01/01/2022');  // OK
-*/
+        //dd($login[1]['token']);
 
         //$fechaInicio = "2021-11-01";
         $fechaInicio = date('Y-m-d');
@@ -48,7 +43,7 @@ class HomeController extends Controller
         /*$fechaInicio = "2021-08-27";  15 dias menos
         $fechaFin = "2021-08-27";*/
         
-        $tiempoInicio = strtotime($fechaInicio. "-15 day");
+        $tiempoInicio = strtotime($fechaInicio. "-35 day");
         $tiempoFin = strtotime($fechaFin);
       
         # 24 horas * 60 minutos por hora * 60 segundos por minuto
@@ -61,9 +56,9 @@ class HomeController extends Controller
 
           $inicio = $fechaActual;    // OK
           $fin = $fechaActual;    // OK
-
-          $ser_integracion = $this->objSer->getPacienteFecha( $login['token'], $inicio, $fin);
           try{
+            $ser_integracion = $this->objSer->getPacienteFecha( $login[$contador_dias]['token'], $inicio, $fin);
+     
             $this->conn = $this->objConexion->getInstancia(config('app.DB_USERNAME'),config('app.DB_PASSWORD'));
             $contador_ciclos = 0;
             $contador_insertados = 0;
@@ -72,6 +67,7 @@ class HomeController extends Controller
             $contador_errores = 0;
             for( $i=0 ; $i < count($ser_integracion) ; $i++ ) { 
               // dd($ser_integracion[$i]['pacienteEpisodios'][0]['idEspecialidad']);
+            
               for( $j=0 ; $j < count($ser_integracion[$i]['pacienteEpisodios']) ; $j++ ) { 
                 $id_paciente = NULL;
                   
@@ -107,6 +103,8 @@ class HomeController extends Controller
                 $fec_egreso_episodio = NULL;
                 try {
                   $id_paciente = $ser_integracion[$i]['idPaciente'];
+
+                 
                     
                   $nom_nombre = $ser_integracion[$i]['nombres'];
                   $nom_apellidos = $ser_integracion[$i]['apellidos'];
@@ -206,6 +204,8 @@ class HomeController extends Controller
                     Log::info($e->getMessage());           // Log::info($io_Error);
                 }
               }  
+
+          
             }
             if( $contador_ciclos > 0){
               echo  "<br><br>Fecha Carga : dia ".$inicio.
@@ -223,6 +223,8 @@ class HomeController extends Controller
                   "<br>Episodios con errores ".$contador_errores);
             }
           } catch(\Exception $e){
+
+            echo $e->getMessage();
             Log::info($e->getMessage());
           }
           $tiempoInicio += $dia;
